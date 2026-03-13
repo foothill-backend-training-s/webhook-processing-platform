@@ -17,9 +17,11 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate"
+    "migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:psql": "dotenv -- bash -lc 'psql \"$DB_URL\"'"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -32,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
     "@types/pg": "^8.18.0",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.9",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

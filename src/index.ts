@@ -1,7 +1,10 @@
 import express from "express";
+import {envOrThrow} from "../src/config";
+process.loadEnvFile();
 
 const app = express();
-const port = 8080;
+const port = envOrThrow("PORT");
+  
 
 // app.use(express.static("."));
 
