@@ -16,28 +16,38 @@ export const users = pgTable("users", {
     .defaultNow()
     .$onUpdate(() => new Date()),
   email: varchar("email", { length: 256 }).unique().notNull(),
-  password: varchar("password").notNull().default("unset"),
+  password: varchar("password"),
 });
 
 export type NewUser = typeof users.$inferInsert;
 
-export const jobQueue = pgTable("job_queue", {
+export const jobs = pgTable("jobs", {
   id: uuid("id").primaryKey().defaultRandom(),
-  taskType: text("task_type").notNull(), // e.g., 'SEND_EMAIL', 'RESIZE_IMAGE'
   payload: jsonb("payload").notNull(), // Data needed for the task
-  status: text("status").default("pending"), // 'pending', 'processing', 'completed', 'failed'
-  attempts: integer("attempts").default(0),
-  runAt: timestamp("run_at").defaultNow(), // When the task should run
+  status: text("status").notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed'
+  attempts: integer("attempts").notNull().default(0),
+  // runAt: timestamp("run_at").defaultNow(), // When the task should run
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  pipelineId: uuid("pipeline_id").references(() => pipeline.id, {
-    onDelete: "cascade"
+  pipelineId: uuid("pipeline_id").notNull().references(() => pipelines.id, {
+    onDelete: "cascade",
   }),
 });
 
-export const pipeline = pgTable("pipeline", {
+export const pipelines = pgTable("pipelines", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name"),
+  name: text("name").notNull(),
   actionType: text("action_type").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+});
+
+export const subscribers = pgTable("subscribers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  endpoint: text("endpoint").notNull(),
+  pipelineId: uuid("pipeline_id").notNull().references(() => pipelines.id, {
+    onDelete: "cascade",
+  }),
 });
