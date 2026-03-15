@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1773436652967,
-      "tag": "0000_cold_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1773510765887,
-      "tag": "0001_same_titanium_man",
+      "when": 1773582651893,
+      "tag": "0000_green_gunslinger",
       "breakpoints": true
     }
   ]

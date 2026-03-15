@@ -27,3 +27,14 @@ export async function deleteSubscribersByPipe(pipelineId: string) {
     .delete(subscribers)
     .where(eq(subscribers.pipelineId, pipelineId));
 }
+
+export async function updateSubscribersById(
+  subId: string,
+  url: string,
+  pipId: string,
+) {
+  return await db
+    .update(subscribers)
+    .set({ endpoint: url, pipelineId: pipId })
+    .where(eq(subscribers.id, subId)).returning();
+}

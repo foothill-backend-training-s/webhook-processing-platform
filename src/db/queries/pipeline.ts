@@ -35,5 +35,5 @@ export async function updatePipeline(
 }
 
 export async function deletePipeLine(id: string) {
-  await db.delete(pipelines).where(eq(pipelines.id, id));
+  return await db.delete(pipelines).where(eq(pipelines.id, id)).returning();
 }

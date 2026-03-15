@@ -4,7 +4,10 @@ import {
   updatePipeline,
   deletePipeLine,
 } from "../db/queries/pipeline.js";
-import { createSubscribers } from "../db/queries/subscribers.js";
+import {
+  createSubscribers,
+  updateSubscribersById,
+} from "../db/queries/subscribers.js";
 import express, { Router, Request, Response } from "express";
 import { HTTPError } from "src/errors/class_error.js";
 const pipelineRouter: Router = express.Router();
@@ -14,14 +17,16 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
   const name = req.body.name;
   const actionType = req.body.action_type;
   const subEndpoints = req.body.sub;
-  if (!userId || !name || !actionType || subEndpoints.length == 0) {
+  if (!userId || !name || !actionType) {
     throw new HTTPError("invalid pipeline data", 400);
   }
   if (!Array.isArray(subEndpoints)) {
     throw new HTTPError("subscribers must be an array", 400);
   }
-  
-  console.log(`userId: ${userId},name: ${name},actionType: ${actionType}`);
+
+  console.log(
+    `userId: ${userId},name: ${name},actionType: ${actionType},subs: ${subEndpoints}`,
+  );
 
   const [pipeline] = await createPipeline(name, actionType, userId);
   if (!pipeline) {
@@ -36,55 +41,71 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
 });
 
 pipelineRouter.get("/:user_id", async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.user_id as string;
-    if (!userId) {
-      throw new HTTPError("invalid userId", 400);
-    }
-    console.log(`userId: ${userId}`);
-
-    const result = await getPipeLines(userId);
-    if (!result) {
-      throw new HTTPError("pipeline not found", 404);
-    }
-    res.status(200).json({
-      count: result.length,
-      pipelines: result,
-    });
-  } catch (err) {
-    throw new HTTPError("server error", 500);
+  const userId = req.params.user_id as string;
+  if (!userId) {
+    throw new HTTPError("invalid userId", 400);
   }
+  console.log(`userId: ${userId}`);
+
+  const result = await getPipeLines(userId);
+  if (!result) {
+    throw new HTTPError("pipeline not found", 404);
+  }
+  res.status(200).json({
+    count: result.length,
+    pipelines: result,
+  });
 });
 
 pipelineRouter.put("/:id", async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const name = req.body.name;
   const actionType = req.body.action_type;
+  const subsInfo = req.body.sub;
   if (!id || !name || !actionType) {
     throw new HTTPError("invalid pipeline data", 400);
   }
+  if (!Array.isArray(subsInfo) || subsInfo.length === 0) {
+    throw new HTTPError("subscribers must be a non-empty array", 400);
+  }
   console.log(`id: ${id},name: ${name},actionType: ${actionType}`);
 
-  const [result] = await updatePipeline(id, name, actionType);
-  if (!result) {
+  const [pipeline] = await updatePipeline(id, name, actionType);
+  if (!pipeline) {
     throw new HTTPError("pipeline not found", 404);
   }
-  res.status(201).json({
-    "pipeline new conf:": result,
+
+  for (const sub of subsInfo) {
+    if (!sub || typeof sub.id !== "string" || typeof sub.url !== "string") {
+      throw new HTTPError(
+        "each subscriber must contain string id and url",
+        400,
+      );
+    }
+  }
+  const updatedSubs = await Promise.all(
+    subsInfo.map((sub) => updateSubscribersById(sub.id, sub.url, pipeline.id)),
+  );
+
+  if (updatedSubs.some((sub) => !sub)) {
+    throw new HTTPError("one or more subscribers not found", 404);
+  }
+  res.status(200).json({
+    pipeline,
+    subscribers: updatedSubs,
   });
 });
 
 pipelineRouter.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id as string;
-    if (!id) {
-      throw new HTTPError("invalid pipeline id", 400);
-    }
-    await deletePipeLine(id);
-    res.status(204).send();
-  } catch (err) {
+  const id = req.params.id as string;
+  if (!id) {
+    throw new HTTPError("invalid pipeline id", 400);
+  }
+  const deleted = await deletePipeLine(id);
+  if (!deleted) {
     throw new HTTPError("pipeline not found", 404);
   }
+  res.status(204).send();
 });
 
 export default pipelineRouter;
