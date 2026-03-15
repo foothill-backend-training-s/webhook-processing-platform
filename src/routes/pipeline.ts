@@ -4,6 +4,7 @@ import {
   updatePipeline,
   deletePipeLine,
 } from "../db/queries/pipeline.js";
+import { createSubscribers } from "../db/queries/subscribers.js";
 import express, { Router, Request, Response } from "express";
 import { HTTPError } from "src/errors/class_error.js";
 const pipelineRouter: Router = express.Router();
@@ -12,17 +13,25 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
   const userId = req.body.user_id;
   const name = req.body.name;
   const actionType = req.body.action_type;
-  if (!userId || !name || !actionType) {
+  const subEndpoints = req.body.sub;
+  if (!userId || !name || !actionType || subEndpoints.length == 0) {
     throw new HTTPError("invalid pipeline data", 400);
   }
+  if (!Array.isArray(subEndpoints)) {
+    throw new HTTPError("subscribers must be an array", 400);
+  }
+  
   console.log(`userId: ${userId},name: ${name},actionType: ${actionType}`);
 
-  const [result] = await createPipeline(name, actionType, userId);
-  if (!result) {
+  const [pipeline] = await createPipeline(name, actionType, userId);
+  if (!pipeline) {
     throw new HTTPError("couldnt create a pipeline", 400);
   }
+  const subs = await createSubscribers(subEndpoints, pipeline.id);
+
   res.status(201).json({
-    pipeline: result,
+    pipeline: pipeline,
+    subscribers: subs,
   });
 });
 
