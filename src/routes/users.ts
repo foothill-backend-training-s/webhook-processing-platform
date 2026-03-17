@@ -1,6 +1,6 @@
-import { createUser, getUsers, getUserById } from "../db/queries/user.js";
+import { createUser, getUsers, getUserById } from "../db/queries/users.js";
 import express, { Router, Request, Response } from "express";
-import { HTTPError } from "src/errors/class_error.js";
+import { HTTPError } from "../errors/class_error.js";
 const usersRouter: Router = express.Router();
 
 usersRouter.post("/", async (req: Request, res: Response) => {

@@ -26,11 +26,14 @@ export const jobs = pgTable("jobs", {
   payload: jsonb("payload").notNull(), // Data needed for the task
   status: text("status").notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed'
   attempts: integer("attempts").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(5),
   // runAt: timestamp("run_at").defaultNow(), // When the task should run
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  pipelineId: uuid("pipeline_id").notNull().references(() => pipelines.id, {
-    onDelete: "cascade",
-  }),
+  pipelineId: uuid("pipeline_id")
+    .notNull()
+    .references(() => pipelines.id, {
+      onDelete: "cascade",
+    }),
 });
 
 export const pipelines = pgTable("pipelines", {
@@ -47,7 +50,9 @@ export const subscribers = pgTable("subscribers", {
   id: uuid("id").primaryKey().defaultRandom(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   endpoint: text("endpoint").notNull(),
-  pipelineId: uuid("pipeline_id").notNull().references(() => pipelines.id, {
-    onDelete: "cascade",
-  }),
+  pipelineId: uuid("pipeline_id")
+    .notNull()
+    .references(() => pipelines.id, {
+      onDelete: "cascade",
+    }),
 });

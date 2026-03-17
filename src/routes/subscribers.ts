@@ -3,7 +3,7 @@ import {
   deleteSubscribersByPipe,
 } from "../db/queries/subscribers.js";
 import express, { Router, Request, Response } from "express";
-import { HTTPError } from "src/errors/class_error.js";
+import { HTTPError } from "../errors/class_error.js";
 const subscribersRouter: Router = express.Router();
 
 subscribersRouter.get("/:pipe_id", async (req: Request, res: Response) => {
@@ -21,7 +21,7 @@ subscribersRouter.delete("/:pipe_id", async (req: Request, res: Response) => {
     throw new HTTPError("invalid pipline id", 400);
   }
   await deleteSubscribersByPipe(id);
-  res.status(204).end;
+  res.status(204).end();
 });
 
 export default subscribersRouter;

@@ -15,8 +15,12 @@ export async function createPipeline(
   return result;
 }
 
-export async function getPipeLines(userId: string) {
+export async function getPipeLinesByUser(userId: string) {
   return db.select().from(pipelines).where(eq(pipelines.userId, userId));
+}
+
+export async function getPipeLinesById(id: string) {
+  return await db.select().from(pipelines).where(eq(pipelines.id, id));
 }
 
 export async function updatePipeline(

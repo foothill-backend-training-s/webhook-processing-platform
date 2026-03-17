@@ -1,15 +1,16 @@
+import express, { Router, Request, Response } from "express";
+import { HTTPError } from "../errors/class_error.js";
 import {
   createPipeline,
-  getPipeLines,
+  getPipeLinesByUser,
   updatePipeline,
   deletePipeLine,
-} from "../db/queries/pipeline.js";
+} from "../db/queries/pipelines.js";
 import {
   createSubscribers,
   updateSubscribersById,
 } from "../db/queries/subscribers.js";
-import express, { Router, Request, Response } from "express";
-import { HTTPError } from "src/errors/class_error.js";
+
 const pipelineRouter: Router = express.Router();
 
 pipelineRouter.post("/", async (req: Request, res: Response) => {
@@ -47,7 +48,7 @@ pipelineRouter.get("/:user_id", async (req: Request, res: Response) => {
   }
   console.log(`userId: ${userId}`);
 
-  const result = await getPipeLines(userId);
+  const result = await getPipeLinesByUser(userId);
   if (!result) {
     throw new HTTPError("pipeline not found", 404);
   }

@@ -33,8 +33,10 @@ export async function updateSubscribersById(
   url: string,
   pipId: string,
 ) {
-  return await db
+  const updated = await db
     .update(subscribers)
     .set({ endpoint: url, pipelineId: pipId })
-    .where(eq(subscribers.id, subId)).returning();
+    .where(eq(subscribers.id, subId))
+    .returning();
+  return [updated];
 }
