@@ -1,12 +1,27 @@
 import { subscribers } from "../schema.js";
 import { db } from "../index.js";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
-export async function getSubscribersByPipe(pipelineId: string) {
+export async function getSubscribersByPipe(
+  pipelineId: string,
+  active?: boolean,
+) {
+  if (!active) {
+    return await db
+      .select()
+      .from(subscribers)
+      .where(eq(subscribers.pipelineId, pipelineId))
+      .orderBy(desc(subscribers.createdAt));
+  }
   return await db
     .select()
     .from(subscribers)
-    .where(eq(subscribers.pipelineId, pipelineId))
+    .where(
+      and(
+        eq(subscribers.pipelineId, pipelineId),
+        eq(subscribers.isActive, active),
+      ),
+    )
     .orderBy(desc(subscribers.createdAt));
 }
 

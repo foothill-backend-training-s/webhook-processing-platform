@@ -5,7 +5,6 @@ import {
   getPipeLinesByUser,
   updatePipeline,
   deletePipeLine,
-  getPipeLinesById,
   getPipeLinesByUrl,
 } from "../db/queries/pipelines.js";
 import { updateSubscribersById } from "../db/queries/subscribers.js";
@@ -19,7 +18,7 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
   const actionType = req.body.action_type;
   const webhookKey = req.body.webhook_key;
   const subEndpoints = req.body.sub;
-  if (!userId || !name || !actionType) {
+  if (!userId || !name || !actionType || !webhookKey) {
     throw new HTTPError("invalid pipeline data", 400);
   }
 
@@ -33,7 +32,7 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
     }
   }
   console.log(
-    `userId: ${userId},name: ${name},actionType: ${actionType},subs: ${subEndpoints}`,
+    `userId: ${userId}, name: ${name}, actionType: ${actionType} , webhook: ${webhookKey} ,subs: ${subEndpoints}`,
   );
 
   const result = await createPipelineWithSubscribers(
@@ -55,9 +54,7 @@ pipelineRouter.get("/users/:user_id", async (req: Request, res: Response) => {
   console.log(`userId: ${userId}`);
 
   const result = await getPipeLinesByUser(userId);
-  if (!result) {
-    throw new HTTPError("pipeline not found", 404);
-  }
+
   res.status(200).json({
     count: result.length,
     pipelines: result,
@@ -76,21 +73,16 @@ pipelineRouter.put("/:id", async (req: Request, res: Response) => {
   if (!Array.isArray(subsInfo) || subsInfo.length === 0) {
     throw new HTTPError("subscribers must be a non-empty array", 400);
   }
-  
+
   console.log(`id: ${id},name: ${name},actionType: ${actionType}`);
 
-  const [pipeline] = await updatePipeline(id, name, actionType,webhookKey);
+  const [pipeline] = await updatePipeline(id, name, actionType, webhookKey);
   if (!pipeline) {
     throw new HTTPError("pipeline not found", 404);
   }
 
   for (const sub of subsInfo) {
-    if (
-      !sub ||
-      typeof sub.id !== "string" ||
-      typeof sub.url !== "string" ||
-      !sub.url.includes("http")
-    ) {
+    if (!sub || typeof sub.id !== "string" || typeof sub.url !== "string") {
       throw new HTTPError(
         "each subscriber must contain string id and url",
         400,
@@ -127,7 +119,7 @@ pipelineRouter.post(
   async (req: Request, res: Response) => {
     const url = req.params.webhook_key as string;
     const reqBody = req.body;
-    //   const userId = req.body.user_id;
+
     if (!url) {
       throw new HTTPError("invalid data", 400);
     }

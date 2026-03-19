@@ -1,14 +1,7 @@
-import express, { Request, Response } from "express";
 import { updateJob, jobCompleted, retryJob } from "../db/queries/jobs.js";
 import { getPipeLinesById } from "../db/queries/pipelines.js";
 import { getSubscribersByPipe } from "../db/queries/subscribers.js";
-import { HTTPError } from "../errors/class_error.js";
-import { envOrThrow } from "../config.js";
 import { sendEmailAction } from "../actions/sendEmail.js";
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 export async function worker(): Promise<void> {
   while (true) {
@@ -30,6 +23,7 @@ export async function worker(): Promise<void> {
       switch (pipeInfo.actionType) {
         case "send_interview_email": {
           const emailContent = sendEmailAction(job.payload);
+          console.log(`email body:\n ${emailContent}`);
           const subs = await getSubscribersByPipe(pipeInfo.id);
           for (var sub of subs) {
             await fetch(sub.endpoint, {
@@ -38,10 +32,15 @@ export async function worker(): Promise<void> {
               body: JSON.stringify(emailContent),
             });
           }
+
+          console.log(
+            `email body\n [${emailContent}]\nsent to each subscriber`,
+          );
+
           break;
         }
       }
-
+      //  retry logic for subscribers before mark job as completed
       await jobCompleted(job.id);
     } catch (err) {
       const res = await retryJob(job.id);
@@ -51,13 +50,3 @@ export async function worker(): Promise<void> {
     }
   }
 }
-
-async function main(): Promise<void> {
-  console.log("starting worker...");
-  await worker();
-}
-
-main().catch((err) => {
-  console.error("worker crashed:", err);
-  process.exit(1);
-});

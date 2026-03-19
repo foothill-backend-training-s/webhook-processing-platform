@@ -22,6 +22,6 @@ You have been selected for an interview for the position of ${payload.data.job_t
 Interview time: ${payload.data.interview_time}
 
 Good luck!
-`,
+`
   };
 }

@@ -69,7 +69,7 @@ export const pipelines = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
     isActive: boolean("is_active").default(true).notNull(),
-    webhookKey: text("webhook_key").notNull().unique(),
+    webhookKey: text("webhook_key").notNull(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -94,5 +94,11 @@ export const subscribers = pgTable(
         onDelete: "cascade",
       }),
   },
-  (table) => [index("pipeline_id_index").on(table.pipelineId)],
+  (table) => [
+    index("pipeline_id_index").on(table.pipelineId),
+    uniqueIndex("pipeline_endpoint_unique").on(
+      table.pipelineId,
+      table.endpoint,
+    ),
+  ],
 );
