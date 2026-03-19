@@ -1,6 +1,6 @@
 {
-  "id": "4d867324-64a5-43d2-b5eb-276925374085",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "f2c5f137-793b-4761-8c05-4d3c8a585349",
+  "prevId": "4d867324-64a5-43d2-b5eb-276925374085",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -168,6 +168,12 @@
           "notNull": true,
           "default": true
         },
+        "webhook_key": {
+          "name": "webhook_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "user_id": {
           "name": "user_id",
           "type": "uuid",
@@ -208,7 +214,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pipelines_webhook_key_unique": {
+          "name": "pipelines_webhook_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "webhook_key"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

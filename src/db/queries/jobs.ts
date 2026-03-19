@@ -2,18 +2,23 @@ import { db } from "../index.js";
 import { jobs } from "../schema.js";
 import { sql, eq } from "drizzle-orm";
 
-export async function createJob(pipeId: string, reqBody: string) {
+// type JSONValue = JSONObject | JSONArray;
+
+export async function createJob(pipeId: string, reqBody: object) {
   return await db
     .insert(jobs)
     .values({ pipelineId: pipeId, payload: reqBody })
     .returning();
 }
+
 type ClaimedJob = {
   id: string;
   pipeline_id: string;
   attempts: number;
   status: string;
+  payload:any;
 };
+
 export async function updateJob() {
   const result = await db.execute(sql`
     WITH next_job AS (
@@ -41,21 +46,35 @@ export async function updateJob() {
 export async function jobCompleted(id: string) {
   return await db
     .update(jobs)
-    .set({ status: "completed" })
+    .set({ status: "completed", completedAt: new Date(), lastError: null })
     .where(eq(jobs.id, id));
 }
 
-export async function retryJob(id: string, attempts: number) {
+export async function retryJob(id: string) {
   const [res] = await db
     .select({ attempts: jobs.attempts, maxAttempts: jobs.maxAttempts })
     .from(jobs)
     .where(eq(jobs.id, id));
+  if (!res) {
+    throw new Error("job not found");
+  }
   if (res.attempts >= res.maxAttempts) {
-    await db.update(jobs).set({ status: "faild" }).where(eq(jobs.id, id));
-    console.log("max attempts have reached , set job to faild");
+    await db
+      .update(jobs)
+      .set({
+        status: "failed",
+        lastError: "max attempts have reached , set job to failed",
+      })
+      .where(eq(jobs.id, id));
+    console.log("max attempts have reached , set job to failed");
+    return "failed";
   }
   return await db
     .update(jobs)
-    .set({ attempts: attempts + 1, status: "pending" })
+    .set({
+      attempts: res.attempts + 1,
+      status: "pending",
+      lastError: "job processing failed, retrying",
+      })
     .where(eq(jobs.id, id));
 }

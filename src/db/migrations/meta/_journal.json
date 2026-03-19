@@ -5,8 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1773582651893,
-      "tag": "0000_green_gunslinger",
+      "when": 1773772912378,
+      "tag": "0000_clumsy_gargoyle",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773878026133,
+      "tag": "0001_careless_silver_samurai",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773924307550,
+      "tag": "0002_massive_molecule_man",
       "breakpoints": true
     }
   ]

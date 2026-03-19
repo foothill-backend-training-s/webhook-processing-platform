@@ -2,18 +2,6 @@ import { subscribers } from "../schema.js";
 import { db } from "../index.js";
 import { asc, desc, eq } from "drizzle-orm";
 
-export async function createSubscribers(
-  endpoints: string[],
-  pipelineId: string,
-) {
-  const values = endpoints.map((endpoint) => ({
-    endpoint,
-    pipelineId,
-  }));
-
-  return await db.insert(subscribers).values(values).returning();
-}
-
 export async function getSubscribersByPipe(pipelineId: string) {
   return await db
     .select()

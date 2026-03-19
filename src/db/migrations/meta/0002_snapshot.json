@@ -1,6 +1,6 @@
 {
-  "id": "4d867324-64a5-43d2-b5eb-276925374085",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "9a5674e5-52df-4b64-b89b-521e979be741",
+  "prevId": "f2c5f137-793b-4761-8c05-4d3c8a585349",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -168,6 +168,12 @@
           "notNull": true,
           "default": true
         },
+        "webhook_key": {
+          "name": "webhook_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "user_id": {
           "name": "user_id",
           "type": "uuid",
@@ -190,6 +196,42 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "webhook_key_index": {
+          "name": "webhook_key_index",
+          "columns": [
+            {
+              "expression": "webhook_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "webhook_key_user_id_index": {
+          "name": "webhook_key_user_id_index",
+          "columns": [
+            {
+              "expression": "webhook_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -208,7 +250,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pipelines_webhook_key_unique": {
+          "name": "pipelines_webhook_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "webhook_key"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
