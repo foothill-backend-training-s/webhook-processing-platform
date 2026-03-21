@@ -1,56 +1,61 @@
+import express, { Router, Request, Response } from "express";
+import { HTTPError } from "../errors/class_error.js";
 import {
-  createPipeline,
-  getPipeLines,
+  createPipelineWithSubscribers,
+  getPipeLinesByUser,
   updatePipeline,
   deletePipeLine,
-} from "../db/queries/pipeline.js";
-import {
-  createSubscribers,
-  updateSubscribersById,
-} from "../db/queries/subscribers.js";
-import express, { Router, Request, Response } from "express";
-import { HTTPError } from "src/errors/class_error.js";
+  getPipeLinesByUrl,
+  getPipeLinesById,
+} from "../db/queries/pipelines.js";
+import { updateSubscribersById } from "../db/queries/subscribers.js";
+import { createJob, getJobByPipeId } from "../db/queries/jobs.js";
+
 const pipelineRouter: Router = express.Router();
 
 pipelineRouter.post("/", async (req: Request, res: Response) => {
   const userId = req.body.user_id;
   const name = req.body.name;
   const actionType = req.body.action_type;
+  const webhookKey = req.body.webhook_key;
   const subEndpoints = req.body.sub;
-  if (!userId || !name || !actionType) {
+  if (!userId || !name || !actionType || !webhookKey) {
     throw new HTTPError("invalid pipeline data", 400);
   }
-  if (!Array.isArray(subEndpoints)) {
-    throw new HTTPError("subscribers must be an array", 400);
+
+  if (!Array.isArray(subEndpoints) || subEndpoints.length === 0) {
+    throw new HTTPError("subscribers must be a non-empty array", 400);
   }
 
+  for (const endpoint of subEndpoints) {
+    if (typeof endpoint !== "string") {
+      throw new HTTPError("each subscriber must be a string endpoint", 400);
+    }
+  }
   console.log(
-    `userId: ${userId},name: ${name},actionType: ${actionType},subs: ${subEndpoints}`,
+    `userId: ${userId}, name: ${name}, actionType: ${actionType} , webhook: ${webhookKey} ,subs: ${subEndpoints}`,
   );
 
-  const [pipeline] = await createPipeline(name, actionType, userId);
-  if (!pipeline) {
-    throw new HTTPError("couldnt create a pipeline", 400);
-  }
-  const subs = await createSubscribers(subEndpoints, pipeline.id);
+  const result = await createPipelineWithSubscribers(
+    name,
+    actionType,
+    userId,
+    webhookKey,
+    subEndpoints,
+  );
 
-  res.status(201).json({
-    pipeline: pipeline,
-    subscribers: subs,
-  });
+  res.status(201).json(result);
 });
 
-pipelineRouter.get("/:user_id", async (req: Request, res: Response) => {
+pipelineRouter.get("/users/:user_id", async (req: Request, res: Response) => {
   const userId = req.params.user_id as string;
   if (!userId) {
     throw new HTTPError("invalid userId", 400);
   }
   console.log(`userId: ${userId}`);
 
-  const result = await getPipeLines(userId);
-  if (!result) {
-    throw new HTTPError("pipeline not found", 404);
-  }
+  const result = await getPipeLinesByUser(userId);
+
   res.status(200).json({
     count: result.length,
     pipelines: result,
@@ -61,6 +66,7 @@ pipelineRouter.put("/:id", async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const name = req.body.name;
   const actionType = req.body.action_type;
+  const webhookKey = req.body.webhook_key;
   const subsInfo = req.body.sub;
   if (!id || !name || !actionType) {
     throw new HTTPError("invalid pipeline data", 400);
@@ -68,9 +74,10 @@ pipelineRouter.put("/:id", async (req: Request, res: Response) => {
   if (!Array.isArray(subsInfo) || subsInfo.length === 0) {
     throw new HTTPError("subscribers must be a non-empty array", 400);
   }
+
   console.log(`id: ${id},name: ${name},actionType: ${actionType}`);
 
-  const [pipeline] = await updatePipeline(id, name, actionType);
+  const [pipeline] = await updatePipeline(id, name, actionType, webhookKey);
   if (!pipeline) {
     throw new HTTPError("pipeline not found", 404);
   }
@@ -108,4 +115,41 @@ pipelineRouter.delete("/:id", async (req: Request, res: Response) => {
   res.status(204).send();
 });
 
+pipelineRouter.post(
+  "/webhooks/:webhook_key",
+  async (req: Request, res: Response) => {
+    const url = req.params.webhook_key as string;
+    const reqBody = req.body;
+
+    if (!url) {
+      throw new HTTPError("invalid data", 400);
+    }
+
+    const [pipe] = await getPipeLinesByUrl(url);
+    if (!pipe) {
+      throw new HTTPError("pipeline not found", 404);
+    }
+
+    const result = await createJob(pipe.id, reqBody);
+    if (!result) {
+      throw new HTTPError("couldnt create a job", 400);
+    }
+
+    res.status(202).json({ message: "job queued successfully", job: result });
+  },
+);
+
+pipelineRouter.get("/:id/jobs", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  if (!id) {
+    throw new HTTPError("no pipeline id provided", 404);
+  }
+  const [pipeline] = await getPipeLinesById(id);
+  if (!pipeline) {
+    throw new HTTPError("pipeline not found", 404);
+  }
+  const result = await getJobByPipeId(id);
+
+  res.status(200).json({ count: result.length, jobs: result });
+});
 export default pipelineRouter;

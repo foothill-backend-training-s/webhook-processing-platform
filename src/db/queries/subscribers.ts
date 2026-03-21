@@ -1,24 +1,27 @@
 import { subscribers } from "../schema.js";
 import { db } from "../index.js";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
-export async function createSubscribers(
-  endpoints: string[],
+export async function getSubscribersByPipe(
   pipelineId: string,
+  active?: boolean,
 ) {
-  const values = endpoints.map((endpoint) => ({
-    endpoint,
-    pipelineId,
-  }));
-
-  return await db.insert(subscribers).values(values).returning();
-}
-
-export async function getSubscribersByPipe(pipelineId: string) {
+  if (active === undefined) {
+    return await db
+      .select()
+      .from(subscribers)
+      .where(eq(subscribers.pipelineId, pipelineId))
+      .orderBy(desc(subscribers.createdAt));
+  }
   return await db
     .select()
     .from(subscribers)
-    .where(eq(subscribers.pipelineId, pipelineId))
+    .where(
+      and(
+        eq(subscribers.pipelineId, pipelineId),
+        eq(subscribers.isActive, active),
+      ),
+    )
     .orderBy(desc(subscribers.createdAt));
 }
 
@@ -33,8 +36,10 @@ export async function updateSubscribersById(
   url: string,
   pipId: string,
 ) {
-  return await db
+  const [updated] = await db
     .update(subscribers)
     .set({ endpoint: url, pipelineId: pipId })
-    .where(eq(subscribers.id, subId)).returning();
+    .where(eq(subscribers.id, subId))
+    .returning();
+  return updated;
 }

@@ -1,0 +1,2 @@
+CREATE INDEX "webhook_key_index" ON "pipelines" USING btree ("webhook_key");--> statement-breakpoint
+CREATE UNIQUE INDEX "webhook_key_user_id_index" ON "pipelines" USING btree ("webhook_key","user_id");
