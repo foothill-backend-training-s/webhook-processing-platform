@@ -1,27 +1,29 @@
-# Use the official Node.js image.
-
-FROM node:22
-
-# Set the working directory in the container.
-
+FROM node:22-alpine AS base
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+RUN npm install -g npm@11.11.0
+
+FROM base AS deps
+COPY package*.json ./
+RUN npm ci
+
+FROM deps AS build
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine AS runtime
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+
+RUN npm install -g npm@11.11.0
 
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-
-RUN npm install
-
-# Copy the rest of the application code
-
-COPY . .
-
-# Expose the port the app runs on
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/src/db/migrations ./src/db/migrations
+COPY --from=build /usr/src/app/drizzle.config.ts ./drizzle.config.ts
 
 EXPOSE 8080
 
-# Define the command to run the application
-
-CMD ["npm","run","dev"]
+CMD ["node", "dist/app/server.js"]

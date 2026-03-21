@@ -1,4 +1,4 @@
-type Payload = {
+export type Payload = {
   recipient: {
     email: string;
     name: string;
@@ -10,20 +10,18 @@ type Payload = {
   };
 };
 export function sendEmailAction(payload: Payload) {
-  throw new Error("forced processing failure");
+  return {
+    to: payload.recipient.email,
+    from: "no-reply@yourapp.com",
+    subject: `Interview Invitation for ${payload.data.job_title}`,
+    body: `
+  Hi ${payload.recipient.name},
 
-  //   return {
-  //     to: payload.recipient.email,
-  //     from: "no-reply@yourapp.com",
-  //     subject: `Interview Invitation for ${payload.data.job_title}`,
-  //     body: `
-  // Hi ${payload.recipient.name},
+  You have been selected for an interview for the position of ${payload.data.job_title}.
 
-  // You have been selected for an interview for the position of ${payload.data.job_title}.
+  Interview time: ${payload.data.interview_time}
 
-  // Interview time: ${payload.data.interview_time}
-
-  // Good luck!
-  // `,
-  //   };
+  Good luck!
+  `,
+  };
 }

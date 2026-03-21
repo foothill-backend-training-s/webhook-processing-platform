@@ -22,7 +22,7 @@ export async function sendToSubscriberWithRetry(
   maxRetries = 3,
 ): Promise<void> {
   let lastError: Error | null = null;
-    
+
   for (let attemptNumber = 1; attemptNumber <= maxRetries; attemptNumber++) {
     const [attempt] = await createDeliveryAttempt(
       jobId,

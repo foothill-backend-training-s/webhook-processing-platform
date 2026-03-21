@@ -1,6 +1,7 @@
 import { db } from "../index.js";
 import { jobs } from "../schema.js";
 import { sql, eq } from "drizzle-orm";
+import { Payload } from "../../actions/sendEmail.js";
 
 export async function createJob(pipeId: string, reqBody: object) {
   return await db
@@ -14,7 +15,7 @@ type ClaimedJob = {
   pipeline_id: string;
   attempts: number;
   status: string;
-  payload: any;
+  payload: Payload;
 };
 
 export async function updateJob() {
