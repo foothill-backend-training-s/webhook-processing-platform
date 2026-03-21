@@ -1,7 +1,17 @@
-import { updateJob, jobCompleted, retryJob } from "../db/queries/jobs.js";
+import {
+  updateJob,
+  jobCompleted,
+  retryJob,
+  failJob,
+} from "../db/queries/jobs.js";
 import { getPipeLinesById } from "../db/queries/pipelines.js";
 import { getSubscribersByPipe } from "../db/queries/subscribers.js";
 import { sendEmailAction } from "../actions/sendEmail.js";
+import { sendToSubscriberWithRetry } from "../delivery/sendToSubscriber.js";
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export async function worker(): Promise<void> {
   while (true) {
@@ -9,7 +19,7 @@ export async function worker(): Promise<void> {
     console.log(job);
 
     if (!job) {
-      await new Promise((r) => setTimeout(r, 5000));
+      await sleep(10000);
       continue;
     }
     try {
@@ -19,33 +29,60 @@ export async function worker(): Promise<void> {
         throw new Error("pipeline not found for claimed job");
       }
 
-      // process action here based on pipeInfo.actionType and job.payload
-      switch (pipeInfo.actionType) {
-        case "send_interview_email": {
-          const emailContent = sendEmailAction(job.payload);
-          console.log(`email body:\n ${emailContent}`);
-          const subs = await getSubscribersByPipe(pipeInfo.id);
-          for (var sub of subs) {
-            await fetch(sub.endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(emailContent),
-            });
-          }
+      let processedPayload: unknown;
 
-          console.log(
-            `email body\n [${emailContent}]\nsent to each subscriber`,
-          );
+      try {
+        switch (pipeInfo.actionType) {
+          case "send_interview_email":
+            processedPayload = sendEmailAction(job.payload);
+            break;
 
-          break;
+          default:
+            throw new Error(`unsupported action type: ${pipeInfo.actionType}`);
         }
+      } catch (err) {
+        console.error("job processing error:", err);
+        const res = await retryJob(job.id);
+
+        if (res === "failed") {
+          console.log("job failed after max processing retries");
+        }
+
+        continue;
       }
-      //  retry logic for subscribers before mark job as completed
+
+      const subs = await getSubscribersByPipe(pipeInfo.id);
+
+      if (subs.length === 0) {
+        await failJob(job.id, "no subscribers found for pipeline");
+        continue;
+      }
+
+      try {
+        for (const sub of subs) {
+          await sendToSubscriberWithRetry(
+            job.id,
+            { id: sub.id, endpoint: sub.endpoint },
+            processedPayload,
+            5,
+          );
+        }
+      } catch (err) {
+        console.error("subscriber delivery error:", err);
+        await failJob(
+          job.id,
+          err instanceof Error ? err.message : "subscriber delivery failed",
+        );
+        continue;
+      }
+
       await jobCompleted(job.id);
     } catch (err) {
+      console.error("unexpected worker error:", err);
       const res = await retryJob(job.id);
-      if (res == "failed") {
-        console.log("job failed after many number of retires");
+
+      if (res === "failed") {
+        console.log("job failed after max processing retries");
       }
     }
   }

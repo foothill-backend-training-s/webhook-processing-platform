@@ -6,9 +6,10 @@ import {
   updatePipeline,
   deletePipeLine,
   getPipeLinesByUrl,
+  getPipeLinesById,
 } from "../db/queries/pipelines.js";
 import { updateSubscribersById } from "../db/queries/subscribers.js";
-import { createJob } from "../db/queries/jobs.js";
+import { createJob, getJobByPipeId } from "../db/queries/jobs.js";
 
 const pipelineRouter: Router = express.Router();
 
@@ -138,4 +139,17 @@ pipelineRouter.post(
   },
 );
 
+pipelineRouter.get("/:id/jobs", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  if (!id) {
+    throw new HTTPError("no pipeline id provided", 404);
+  }
+  const [pipeline] = await getPipeLinesById(id);
+  if (!pipeline) {
+    throw new HTTPError("pipeline not found", 404);
+  }
+  const result = await getJobByPipeId(id);
+
+  res.status(200).json({ count: result.length, jobs: result });
+});
 export default pipelineRouter;

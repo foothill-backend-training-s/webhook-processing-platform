@@ -69,7 +69,7 @@ export const pipelines = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
     isActive: boolean("is_active").default(true).notNull(),
-    webhookKey: text("webhook_key").notNull(),
+    webhookKey: text("webhook_key").notNull().unique(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -77,7 +77,6 @@ export const pipelines = pgTable(
   (table) => [
     index("user_id_index").on(table.userId),
     index("webhook_key_index").on(table.webhookKey),
-    uniqueIndex("webhook_key_user_id_index").on(table.webhookKey, table.userId),
   ],
 );
 
@@ -99,6 +98,46 @@ export const subscribers = pgTable(
     uniqueIndex("pipeline_endpoint_unique").on(
       table.pipelineId,
       table.endpoint,
+    ),
+  ],
+);
+
+export const deliveryAttempts = pgTable(
+  "delivery_attempts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => jobs.id, {
+        onDelete: "cascade",
+      }),
+    subscriberId: uuid("subscriber_id")
+      .notNull()
+      .references(() => subscribers.id, {
+        onDelete: "cascade",
+      }),
+    attemptNumber: integer("attempt_number").notNull(),
+    status: text("status").notNull().default("pending"), // 'pending', 'success', 'failed'
+    attemptedAt: timestamp("attempted_at").notNull().defaultNow(),
+    responseStatusCode: integer("response_status_code"),
+    errorMessage: text("error_message"),
+    deliveredAt: timestamp("delivered_at"),
+    nextRetryAt: timestamp("next_retry_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check(
+      "delivery_attempts_status_check",
+      sql`${table.status} in ('pending', 'success', 'failed')`,
+    ),
+    uniqueIndex("job_subscriber_attempt_number_unique").on(
+      table.jobId,
+      table.subscriberId,
+      table.attemptNumber,
     ),
   ],
 );

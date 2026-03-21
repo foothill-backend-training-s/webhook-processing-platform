@@ -6,7 +6,7 @@ export async function getSubscribersByPipe(
   pipelineId: string,
   active?: boolean,
 ) {
-  if (!active) {
+  if (active === undefined) {
     return await db
       .select()
       .from(subscribers)
@@ -36,10 +36,10 @@ export async function updateSubscribersById(
   url: string,
   pipId: string,
 ) {
-  const updated = await db
+  const [updated] = await db
     .update(subscribers)
     .set({ endpoint: url, pipelineId: pipId })
     .where(eq(subscribers.id, subId))
     .returning();
-  return [updated];
+  return updated;
 }

@@ -10,18 +10,20 @@ type Payload = {
   };
 };
 export function sendEmailAction(payload: Payload) {
-  return {
-    to: payload.recipient.email,
-    from: "no-reply@yourapp.com",
-    subject: `Interview Invitation for ${payload.data.job_title}`,
-    body: `
-Hi ${payload.recipient.name},
+  throw new Error("forced processing failure");
 
-You have been selected for an interview for the position of ${payload.data.job_title}.
+  //   return {
+  //     to: payload.recipient.email,
+  //     from: "no-reply@yourapp.com",
+  //     subject: `Interview Invitation for ${payload.data.job_title}`,
+  //     body: `
+  // Hi ${payload.recipient.name},
 
-Interview time: ${payload.data.interview_time}
+  // You have been selected for an interview for the position of ${payload.data.job_title}.
 
-Good luck!
-`
-  };
+  // Interview time: ${payload.data.interview_time}
+
+  // Good luck!
+  // `,
+  //   };
 }

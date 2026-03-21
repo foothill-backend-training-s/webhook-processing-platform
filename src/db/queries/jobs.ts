@@ -2,8 +2,6 @@ import { db } from "../index.js";
 import { jobs } from "../schema.js";
 import { sql, eq } from "drizzle-orm";
 
-// type JSONValue = JSONObject | JSONArray;
-
 export async function createJob(pipeId: string, reqBody: object) {
   return await db
     .insert(jobs)
@@ -16,7 +14,7 @@ type ClaimedJob = {
   pipeline_id: string;
   attempts: number;
   status: string;
-  payload:any;
+  payload: any;
 };
 
 export async function updateJob() {
@@ -30,7 +28,7 @@ export async function updateJob() {
       LIMIT 1
     )
     UPDATE jobs
-    SET status = 'processing'
+    SET status = 'processing' , updated_at=CURRENT_TIMESTAMP
     WHERE id IN (SELECT id FROM next_job)
     RETURNING *;
   `);
@@ -75,6 +73,30 @@ export async function retryJob(id: string) {
       attempts: res.attempts + 1,
       status: "pending",
       lastError: "job processing failed, retrying",
-      })
+    })
     .where(eq(jobs.id, id));
+}
+
+export async function getJob() {
+  return db.select().from(jobs);
+}
+export async function getJobById(jobId: string) {
+  return db.select().from(jobs).where(eq(jobs.id, jobId));
+}
+export async function getJobByPipeId(pipeId: string) {
+  return db.select().from(jobs).where(eq(jobs.pipelineId, pipeId));
+}
+
+export async function failJob(id: string, errorMessage: string) {
+  const [updated] = await db
+    .update(jobs)
+    .set({
+      status: "failed",
+      lastError: errorMessage,
+      updatedAt: new Date(),
+    })
+    .where(eq(jobs.id, id))
+    .returning();
+
+  return updated;
 }

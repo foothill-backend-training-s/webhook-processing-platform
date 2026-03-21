@@ -22,6 +22,20 @@
       "when": 1773924307550,
       "tag": "0002_massive_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774051857503,
+      "tag": "0003_lazy_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774094271088,
+      "tag": "0004_aberrant_unicorn",
+      "breakpoints": true
     }
   ]
 }
