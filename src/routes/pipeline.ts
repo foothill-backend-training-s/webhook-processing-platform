@@ -33,7 +33,7 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
     }
   }
   console.log(
-    `userId: ${userId}, name: ${name}, actionType: ${actionType} , webhook: ${webhookKey} ,subs: ${subEndpoints}`,
+    `userId: ${userId}\nname: ${name}\nactionType: ${actionType}\nwebhook: ${webhookKey}\nsubs: ${subEndpoints}`,
   );
 
   const result = await createPipelineWithSubscribers(
