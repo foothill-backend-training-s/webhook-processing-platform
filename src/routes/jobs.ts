@@ -15,7 +15,7 @@ jobsRouter.get("/:id", async (req: Request, res: Response) => {
   if (!jobId) {
     throw new HTTPError("no job id provided", 404);
   }
-  const job = await getJobById(jobId);
+  const [job] = await getJobById(jobId);
   if (!job) {
     throw new HTTPError("job not found", 404);
   }

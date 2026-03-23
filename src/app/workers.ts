@@ -26,7 +26,7 @@ export async function worker(): Promise<void> {
     }
 
     if (!job) {
-      await sleep(100000);
+      await sleep(10000);
       continue;
     }
     try {

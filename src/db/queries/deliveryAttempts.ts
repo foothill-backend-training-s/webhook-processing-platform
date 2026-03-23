@@ -13,18 +13,6 @@ export async function createDeliveryAttempt(
     .returning();
 }
 
-export async function updateDeliveryAttempt(
-  attemptNum: number,
-  status?: string,
-) {
-  if (!status)
-    return await db.update(deliveryAttempts).set({ attemptNumber: attemptNum });
-  else
-    return await db
-      .update(deliveryAttempts)
-      .set({ attemptNumber: attemptNum, status: status });
-}
-
 export async function markDeliveryAttemptSuccess(
   attemptId: string,
   responseStatusCode: number,

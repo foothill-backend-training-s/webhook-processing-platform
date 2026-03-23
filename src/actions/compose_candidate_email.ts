@@ -1,5 +1,5 @@
-import { Payload } from "../../src/types/payload.js";
-import { Email } from "../../src/types/email_elements.js";
+import { Payload } from "../types/payload";
+import { Email } from "../types/email_elements.js";
 import "dotenv/config";
 
 export function composeEmailAction(payload: Payload[]): Email[] {

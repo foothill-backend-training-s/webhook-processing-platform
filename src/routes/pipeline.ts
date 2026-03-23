@@ -108,7 +108,7 @@ pipelineRouter.delete("/:id", async (req: Request, res: Response) => {
   if (!id) {
     throw new HTTPError("invalid pipeline id", 400);
   }
-  const deleted = await deletePipeLine(id);
+  const [deleted] = await deletePipeLine(id);
   if (!deleted) {
     throw new HTTPError("pipeline not found", 404);
   }

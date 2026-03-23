@@ -6,11 +6,17 @@ const usersRouter: Router = express.Router();
 
 usersRouter.post("/", async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const hashedPass = await hashPassword(password);
 
   if (!email || !password) {
     throw new HTTPError("invalid user data", 400);
   }
+
+  const hashedPass = await hashPassword(password);
+
+  if (!hashedPass) {
+    throw new HTTPError("something went wrong", 400);
+  }
+
   const [result] = await createUser(email, hashedPass);
 
   console.log(`email: ${result.email},pass: ${result.password}`);
