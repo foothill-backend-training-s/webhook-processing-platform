@@ -103,12 +103,8 @@
           "name": "jobs_pipeline_id_pipelines_id_fk",
           "tableFrom": "jobs",
           "tableTo": "pipelines",
-          "columnsFrom": [
-            "pipeline_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pipeline_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -239,12 +235,8 @@
           "name": "pipelines_user_id_users_id_fk",
           "tableFrom": "pipelines",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -254,9 +246,7 @@
         "pipelines_webhook_key_unique": {
           "name": "pipelines_webhook_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "webhook_key"
-          ]
+          "columns": ["webhook_key"]
         }
       },
       "policies": {},
@@ -323,12 +313,8 @@
           "name": "subscribers_pipeline_id_pipelines_id_fk",
           "tableFrom": "subscribers",
           "tableTo": "pipelines",
-          "columnsFrom": [
-            "pipeline_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pipeline_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -384,9 +370,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
