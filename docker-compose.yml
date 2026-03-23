@@ -17,7 +17,7 @@ services:
       start_period: 5s
 
   migrate:
-    build: 
+    build:
       context: .
       target: build
     command: npm run migrate
@@ -38,6 +38,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    env_file:
+      - .env
     environment:
       PORT: ${PORT}
       DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -52,9 +54,12 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    env_file:
+      - .env
     environment:
       DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       NODE_ENV: production
+
     restart: unless-stopped
 
 volumes:

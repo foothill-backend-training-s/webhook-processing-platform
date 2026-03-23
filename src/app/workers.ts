@@ -14,12 +14,16 @@ function sleep(ms: number): Promise<void> {
 }
 
 export async function worker(): Promise<void> {
+  console.log("worker started");
+  console.log("waiting for a job");
   while (true) {
     const [job] = await updateJob();
-    console.log(job);
+    if (job) {
+      console.log(job);
+    }
 
     if (!job) {
-      await sleep(10000);
+      await sleep(100000);
       continue;
     }
     try {

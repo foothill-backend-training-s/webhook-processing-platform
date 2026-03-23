@@ -118,14 +118,14 @@ pipelineRouter.delete("/:id", async (req: Request, res: Response) => {
 pipelineRouter.post(
   "/webhooks/:webhook_key",
   async (req: Request, res: Response) => {
-    const url = req.params.webhook_key as string;
+    const webhook_key = req.params.webhook_key as string;
     const reqBody = req.body;
 
-    if (!url) {
+    if (!webhook_key) {
       throw new HTTPError("invalid data", 400);
     }
 
-    const [pipe] = await getPipeLinesByUrl(url);
+    const [pipe] = await getPipeLinesByUrl(webhook_key);
     if (!pipe) {
       throw new HTTPError("pipeline not found", 404);
     }
