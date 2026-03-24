@@ -12,11 +12,13 @@
 A **Webhook-Driven Task Processing Pipeline** inspired by tools like Zapier.
 
 This system allows users to:
+
 - Receive webhook events
 - Process them asynchronously
 - Deliver results to multiple subscribers
 
 Built with:
+
 - TypeScript
 - PostgreSQL
 - Docker
@@ -72,12 +74,14 @@ tests/            # Tests
 ## Setup
 
 ### Clone
+
 ```
 git clone <repo-url>
 cd webhook-processing-platform
 ```
 
 ### Environment
+
 Create `.env`:
 
 ```
@@ -86,6 +90,7 @@ PORT=3000
 ```
 
 ### Run
+
 ```
 docker compose up --build
 ```
@@ -94,54 +99,132 @@ docker compose up --build
 
 ## API Documentation
 
-### 1. Create Pipeline
+### 1. Create Users
 
+Request:
+
+```json
+{
+  "email": "user_email",
+  "password": "user_pass"
+}
+```
+
+Response:
+
+````json
+{
+  "user":
+  {
+    "id":"user_is",
+    "createdAt":"time_row_created",
+    "updatedAt":"time_row_created_as_defult",
+    "email":"user_email",
+    "password":"user_hashed_pass"
+  }
+}
+```
+---
+
+### 2. Create Pipline
 **POST /pipelines**
 
 Request:
 ```json
 {
-  "name": "email_pipeline",
-  "actionType": "compose_candidate_email"
+  "user_id": "",
+  "name": "Interview Pipeline",
+  "action_type": "compose_candidate_email or send_candidate_email or send_http_request",
+  "webhook_key": "interview-<actionType>-1",
+  "sub": [
+      "https://webhook.site/2c8441c6-3458-4eac-ac23-8f58d6899912" // you can use this as example
+  ]
 }
-```
+````
+
+note : you can use https://webhook.site/ site as a subscribers (to recieve the webhooks processed data)
 
 Response:
+
 ```json
 {
-  "id": "pipeline_id",
-  "name": "email_pipeline",
-  "actionType": "compose_candidate_email"
+  "pipeline":
+  {
+    "id":,
+    "name":"Interview Pipeline",
+    "actionType":"compose_candidate_email",
+    "createdAt":,
+    "updatedAt":,
+    "isActive":true,
+    "webhookKey":"interview-compose-1",
+    "userId":
+  },
+    "subs":
+    [
+      {
+        "id":,
+        "createdAt":,
+        "endpoint":"https://webhook.site/2c8441c6-3458-4eac-ac23-8f58d6899912",
+        "isActive":true,
+        "pipelineId":
+      }
+    ]
 }
 ```
 
 ---
 
-### 2. Trigger Webhook
+### 3. Trigger Webhook
 
 **POST /webhook/:pipelineId**
 
 Request:
+
 ```json
 [
   {
     "recipient": {
-      "name": "John",
-      "email": "john@test.com"
+      "email": "user_email", // thats the user that will recieve the email
+      "name": "user name"
     },
     "data": {
       "job_title": "Backend Engineer",
-      "interview_time": "10:00 AM"
+      "interview_time": "2026-04-01 10:00"
     }
   }
 ]
 ```
 
 Response:
+
 ```json
 {
-  "jobId": "job_uuid",
-  "status": "queued"
+    "message": "job queued successfully",
+    "job": [
+        {
+            "id": ,
+            "payload": [
+                {
+                    "data": {
+                        "job_title": "Backend Engineer",
+                        "interview_time": "2026-04-01 10:00"
+                    },
+                    "recipient": {
+                        "name": ,
+                        "email": 
+                    }
+                },
+            ],
+            "status": "pending",
+            "attempts": 0,
+            "maxAttempts": 5,
+            "createdAt": "2026-03-24T17:36:46.952Z",
+            "lastError": null,
+            "completedAt": null,
+            "updatedAt": "2026-03-24T17:36:46.952Z",
+            "pipelineId": 
+        }
+    ]
 }
 ```
 
@@ -152,6 +235,7 @@ Response:
 **GET /jobs/:id**
 
 Response:
+
 ```json
 {
   "id": "job_uuid",
@@ -167,6 +251,7 @@ Response:
 **GET /jobs/:id/delivery-attempts**
 
 Response:
+
 ```json
 [
   {
@@ -186,12 +271,15 @@ Response:
 ## Actions
 
 ### compose_candidate_email
+
 Transforms webhook payload into email content.
 
 ### send_candidate_email
-Sends emails to candidates.
+
+Sends emails to candidates(users).
 
 ### send_http_request
+
 Sends processed data to external APIs.
 
 ---
@@ -199,23 +287,28 @@ Sends processed data to external APIs.
 ## 🔥 Design Decisions (Important)
 
 ### 1. Database as Job Queue
+
 Instead of using Redis or Kafka, PostgreSQL is used as a queue.
 
 Why?
+
 - Simpler architecture
 - Strong consistency
 - Easier debugging
 - No extra infrastructure
 
 Tradeoff:
+
 - Not ideal for very high throughput systems
 
 ---
 
 ### 2. Worker-Based Processing
+
 Webhook requests are not processed synchronously.
 
 Why?
+
 - Prevents API blocking
 - Improves scalability
 - Handles spikes safely
@@ -223,9 +316,11 @@ Why?
 ---
 
 ### 3. Action Abstraction
+
 Each action is implemented as a separate module.
 
 Why?
+
 - Easy to extend
 - Clean separation of concerns
 - Supports adding new actions without touching core logic
@@ -233,11 +328,14 @@ Why?
 ---
 
 ### 4. Separate Retry Systems
+
 Two retry mechanisms:
+
 - Job processing retry
 - Subscriber delivery retry
 
 Why?
+
 - Different failure types
 - Better control over reliability
 - Clear debugging
@@ -245,9 +343,11 @@ Why?
 ---
 
 ### 5. Delivery Attempt Tracking
+
 All delivery attempts are stored in DB.
 
 Why?
+
 - Full observability
 - Debugging failures
 - Audit trail
@@ -257,6 +357,7 @@ Why?
 ## CI/CD
 
 GitHub Actions:
+
 - Install dependencies
 - Build
 - Run tests
@@ -266,11 +367,13 @@ GitHub Actions:
 ## Testing
 
 Run:
+
 ```
 npm run test
 ```
 
 Includes:
+
 - Unit tests
 - Integration tests
 - Worker tests
