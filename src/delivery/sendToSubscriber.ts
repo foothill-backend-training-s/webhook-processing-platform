@@ -79,7 +79,6 @@ export async function sendToSubscriberWithRetry(
       );
 
       lastError = error instanceof Error ? error : new Error(message);
- 
     }
 
     if (attemptNumber < maxRetries) {

@@ -14,4 +14,3 @@ app.use("/subscribers", subscribersRouter);
 app.use("/jobs", jobsRouter);
 
 app.use(errorHandlerMiddleware);
-
