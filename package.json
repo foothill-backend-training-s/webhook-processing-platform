@@ -26,7 +26,10 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:psql": "dotenv -- bash -lc 'psql \"$DB_URL\"'"
+    "db:psql": "dotenv -- bash -lc 'psql \"$DB_URL\"'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "argon2": "^0.44.0",
