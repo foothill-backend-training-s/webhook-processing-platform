@@ -29,9 +29,11 @@
     "db:psql": "dotenv -- bash -lc 'psql \"$DB_URL\"'"
   },
   "dependencies": {
+    "argon2": "^0.44.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
+    "nodemailer": "^8.0.3",
     "pg": "^8.20.0",
     "postgres": "^3.4.8"
   },
@@ -39,6 +41,7 @@
     "@eslint/js": "^9.39.4",
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
+    "@types/nodemailer": "^7.0.11",
     "@types/pg": "^8.18.0",
     "@types/supertest": "^7.2.0",
     "dotenv-cli": "^11.0.0",

@@ -1,15 +1,25 @@
-import { createUser, getUsers, getUserById } from "../db/queries/users.js";
 import express, { Router, Request, Response } from "express";
+import { createUser, getUsers, getUserById } from "../db/queries/users.js";
+import { hashPassword } from "../auth.js";
 import { HTTPError } from "../errors/class_error.js";
 const usersRouter: Router = express.Router();
 
 usersRouter.post("/", async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     throw new HTTPError("invalid user data", 400);
   }
-  console.log(`email: ${email},pass: ${password}`);
-  const [result] = await createUser(email, password);
+
+  const hashedPass = await hashPassword(password);
+
+  if (!hashedPass) {
+    throw new HTTPError("something went wrong", 400);
+  }
+
+  const [result] = await createUser(email, hashedPass);
+
+  console.log(`email: ${result.email},pass: ${result.password}`);
 
   if (!result) {
     throw new HTTPError("couldnt create a user", 400);

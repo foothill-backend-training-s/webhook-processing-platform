@@ -1,0 +1,1 @@
+ALTER TABLE "pipelines" ADD CONSTRAINT "action_type_check" CHECK ("pipelines"."action_type" in ('compose_candidate_email', 'send_candidate_email', 'send_http_request'));

@@ -33,7 +33,7 @@ pipelineRouter.post("/", async (req: Request, res: Response) => {
     }
   }
   console.log(
-    `userId: ${userId}, name: ${name}, actionType: ${actionType} , webhook: ${webhookKey} ,subs: ${subEndpoints}`,
+    `userId: ${userId}\nname: ${name}\nactionType: ${actionType}\nwebhook: ${webhookKey}\nsubs: ${subEndpoints}`,
   );
 
   const result = await createPipelineWithSubscribers(
@@ -108,7 +108,7 @@ pipelineRouter.delete("/:id", async (req: Request, res: Response) => {
   if (!id) {
     throw new HTTPError("invalid pipeline id", 400);
   }
-  const deleted = await deletePipeLine(id);
+  const [deleted] = await deletePipeLine(id);
   if (!deleted) {
     throw new HTTPError("pipeline not found", 404);
   }

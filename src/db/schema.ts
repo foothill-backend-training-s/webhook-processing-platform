@@ -75,6 +75,10 @@ export const pipelines = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
+    check(
+      "action_type_check",
+      sql`${table.actionType} in ('compose_candidate_email', 'send_candidate_email', 'send_http_request')`,
+    ),
     index("user_id_index").on(table.userId),
     index("webhook_key_index").on(table.webhookKey),
   ],
