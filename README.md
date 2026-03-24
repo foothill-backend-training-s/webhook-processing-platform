@@ -112,7 +112,7 @@ its critical to get a working gmail account so for the service to work , other w
 ### Run
 
 ```
-docker compose up --build
+docker compose up 
 ```
 
 ---
