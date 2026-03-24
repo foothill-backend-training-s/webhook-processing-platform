@@ -8,9 +8,11 @@ import { getPipeLinesById } from "../db/queries/pipelines.js";
 import { getSubscribersByPipe } from "../db/queries/subscribers.js";
 import { composeEmailAction } from "../actions/compose_candidate_email.js";
 import { sendEmailAction } from "../actions/send_candidate_email.js";
+import { sendHttpRequestAction } from "../actions/send_http_request.js";
 import { sendToSubscriberWithRetry } from "../delivery/sendToSubscriber.js";
 import { Payload } from "../types/payload.js";
-import { Email } from "../types/email_elements.js";
+import { Email } from "../types/email_content.js";
+import { SendHttpRequestPayload } from "../types/request_content.js";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,6 +42,17 @@ export async function worker(): Promise<void> {
       const processedData: unknown[] = [];
 
       try {
+        const allowedActionTypes = [
+          "compose_candidate_email",
+          "send_candidate_email",
+          "send_http_request",
+        ];
+
+        if (!allowedActionTypes.includes(pipeInfo.actionType)) {
+          console.log("invalid action type");
+          await failJob(job.id, "invalid action type");
+          continue;
+        }
         switch (pipeInfo.actionType) {
           case "compose_candidate_email": {
             const payload = job.payload as Payload[];
@@ -52,6 +65,11 @@ export async function worker(): Promise<void> {
               processedData.push(await sendEmailAction(emailBody));
             }
             processedPayload = processedData;
+            break;
+          }
+          case "send_http_request": {
+            const payload = job.payload as SendHttpRequestPayload;
+            processedPayload = await sendHttpRequestAction(payload);
             break;
           }
           default:

@@ -77,7 +77,7 @@ export const pipelines = pgTable(
   (table) => [
     check(
       "action_type_check",
-      sql`${table.actionType} in ('compose_candidate_email', 'send_candidate_email', 'action3')`,
+      sql`${table.actionType} in ('compose_candidate_email', 'send_candidate_email', 'send_http_request')`,
     ),
     index("user_id_index").on(table.userId),
     index("webhook_key_index").on(table.webhookKey),

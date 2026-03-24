@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import "dotenv/config";
-import { Email } from "../../src/types/email_elements.js";
+import { Email } from "../types/email_content.js";
 
 // Create a transporter using Ethereal test credentials.
 const transporter = nodemailer.createTransport({
