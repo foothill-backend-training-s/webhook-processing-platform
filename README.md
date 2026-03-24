@@ -80,10 +80,17 @@ git clone <repo-url>
 cd webhook-processing-platform
 ```
 
+### install dependencies
+
+```
+npm install
+```
+
 ### Environment
 
-Create `.env` from `.env.example`:
+Create `.env` :
 
+- i provided the .env.example file in the additional inforamtion section in the submit form ,and all the values needed for the .env is there
 ```
 DATABASE_URL=postgres://user:password@db:5432/app
 PORT=8080
@@ -113,6 +120,7 @@ docker compose up --build
 ## API Documentation
 
 ### 1. Create Users
+Registers a new user to manage pipelines.
 
 **POST /users**
 
@@ -142,6 +150,7 @@ Response:
 ---
 
 ### 2. Create Pipline
+Creates a new processing workflow. Note that action_type is case-sensitive.
 
 **POST /pipelines**
 
@@ -260,6 +269,7 @@ Request:
 ---
 
 ### 3. Trigger Webhook
+Submit data to the pipeline. This adds a task to the asynchronous job queue.
 
 **POST pipelines/webhooks/webhookKey**
 - this is an example for the "compose_candidate_email" , you can test the other actions with the same endpoint but with the action required body from the previous section 
