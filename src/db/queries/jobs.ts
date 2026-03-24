@@ -2,7 +2,7 @@ import { db } from "../index.js";
 import { jobs } from "../schema.js";
 import { sql, eq } from "drizzle-orm";
 
-export async function createJob(pipeId: string, reqBody: object) {
+export async function createJob(pipeId: string, reqBody: unknown) {
   return await db
     .insert(jobs)
     .values({ pipelineId: pipeId, payload: reqBody })

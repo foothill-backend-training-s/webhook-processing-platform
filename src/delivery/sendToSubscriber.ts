@@ -77,17 +77,18 @@ export async function sendToSubscriberWithRetry(
         undefined,
         nextRetryAt,
       );
-      await failJob(
-        jobId,
-        `subscriber delivery failed after ${maxRetries} retries`,
-      );
+
       lastError = error instanceof Error ? error : new Error(message);
+ 
     }
 
     if (attemptNumber < maxRetries) {
       await sleep(delay);
     }
   }
-
+  await failJob(
+    jobId,
+    `subscriber delivery failed after ${maxRetries} retries`,
+  );
   throw lastError ?? new Error("subscriber delivery failed after retries");
 }

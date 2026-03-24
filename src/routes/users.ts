@@ -19,7 +19,7 @@ usersRouter.post("/", async (req: Request, res: Response) => {
 
   const [result] = await createUser(email, hashedPass);
 
-  console.log(`email: ${result.email},pass: ${result.password}`);
+  console.log(`email: ${result.email}`);
 
   if (!result) {
     throw new HTTPError("couldnt create a user", 400);
