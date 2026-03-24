@@ -82,7 +82,7 @@ cd webhook-processing-platform
 
 ### Environment
 
-Create `.env`:
+Create `.env` from `.env.example`:
 
 ```
 DATABASE_URL=postgres://user:password@db:5432/app
@@ -101,6 +101,8 @@ docker compose up --build
 
 ### 1. Create Users
 
+**POST /users**
+
 Request:
 
 ```json
@@ -112,35 +114,37 @@ Request:
 
 Response:
 
-````json
+```json
 {
-  "user":
-  {
-    "id":"user_is",
-    "createdAt":"time_row_created",
-    "updatedAt":"time_row_created_as_defult",
-    "email":"user_email",
-    "password":"user_hashed_pass"
+  "user": {
+    "id": "user_is",
+    "createdAt": "time_row_created",
+    "updatedAt": "time_row_created_as_defult",
+    "email": "user_email",
+    "password": "user_hashed_pass"
   }
 }
-````
+```
+
 ---
 
 ### 2. Create Pipline
+
 **POST /pipelines**
 
 Request:
+
 ```json
 {
   "user_id": "",
   "name": "Interview Pipeline",
-  "action_type": "compose_candidate_email or send_candidate_email or send_http_request",
+  "action_type": "", //compose_candidate_email or send_candidate_email or send_http_request
   "webhook_key": "interview-<actionType>-1",
   "sub": [
-      "https://webhook.site/2c8441c6-3458-4eac-ac23-8f58d6899912" // you can use this as example
+    "https://webhook.site/2c8441c6-3458-4eac-ac23-8f58d6899912" // you can use this as example
   ]
 }
-````
+```
 
 note : you can use https://webhook.site/ site as a subscribers (to recieve the webhooks processed data)
 
@@ -174,9 +178,76 @@ Response:
 
 ---
 
+## Actions
+
+there is 3 types of actions in this project , each have a specific body for the request
+
+### compose_candidate_email
+
+Transforms webhook payload into email content.
+
+Request :
+
+```json
+[
+  {
+    "recipient": {
+      "email": "user_email", // thats the user that will recieve the email
+      "name": "user name"
+    },
+    "data": {
+      "job_title": "Backend Engineer",
+      "interview_time": "2026-04-01 10:00"
+    }
+  }
+]
+```
+
+### send_candidate_email
+
+Sends emails to candidates(users).
+
+- action can send eamils to multiple users
+  Request:
+
+```json
+[
+  {
+    "to": "nidashomaly@gmail.com", // thats the email for the user that will recieve the email
+    // type a valid active email , else the job will fail
+    "subject": "Interview Invitation for Backend Engineer",
+    "body": "\nHi Nida Shomaly,\n\nYou have been selected for an interview for the position of Backend Engineer.\n\nInterview time: 2026-04-01 10:00\n\nGood luck!\n"
+  }
+]
+```
+
+### send_http_request
+
+Sends processed data to external APIs.
+
+Request:
+
+```json
+{
+  "url": "https://httpbin.org/post",
+  "httpMethod": "POST",
+  "headers": {
+    "X-Test-Header": "demo"
+  },
+  "body": {
+    "message": "hello from webhook pipeline",
+    "user": "sama",
+    "project": "foothill"
+  }
+}
+```
+
+---
+
 ### 3. Trigger Webhook
 
-**POST /webhook/:pipelineId**
+**POST pipelines/webhooks/webhookKey**
+- this is an example for the "compose_candidate_email" , you can test the other actions with the same endpoint but with the action required body from the previous section 
 
 Request:
 
@@ -211,7 +282,7 @@ Response:
                     },
                     "recipient": {
                         "name": ,
-                        "email": 
+                        "email":
                     }
                 },
             ],
@@ -222,7 +293,7 @@ Response:
             "lastError": null,
             "completedAt": null,
             "updatedAt": "2026-03-24T17:36:46.952Z",
-            "pipelineId": 
+            "pipelineId":
         }
     ]
 }
@@ -231,6 +302,20 @@ Response:
 ---
 
 ### 3. Get Job Status
+
+**GET /jobs**
+
+Response:
+
+```json
+[
+  {
+    "id": "job_uuid",
+    "status": "completed",
+    "pipelineId": "pipeline_id"
+  }
+]
+```
 
 **GET /jobs/:id**
 
@@ -248,7 +333,7 @@ Response:
 
 ### 4. Delivery Attempts
 
-**GET /jobs/:id/delivery-attempts**
+**GET /jobs/:id/delivery_attempts**
 
 Response:
 

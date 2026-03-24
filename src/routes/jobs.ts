@@ -27,4 +27,18 @@ jobsRouter.get("/:id", async (req: Request, res: Response) => {
   });
 });
 
+jobsRouter.get(
+  "/:id/delivery_attempts",
+  async (req: Request, res: Response) => {
+    const jobId = req.params.id as string;
+    if (!jobId) {
+      throw new HTTPError("no job id provided", 404);
+    }
+    const attempts = await getDeliveryAttemptsByJobId(jobId);
+
+    res.status(200).json({
+      deliveryAttempts: attempts,
+    });
+  },
+);
 export default jobsRouter;
