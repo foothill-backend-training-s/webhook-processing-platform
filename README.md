@@ -86,8 +86,21 @@ Create `.env` from `.env.example`:
 
 ```
 DATABASE_URL=postgres://user:password@db:5432/app
-PORT=3000
+PORT=8080
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+SMTP_PASS=
+SMTP_USER = 
+SMTP_SERVICE = 
+SMTP_HOST=
+SMTP_PORT=
 ```
+note : for the SMTP_PASS and SMTP_USER , i couldnt include them in the .env.example because its a sensitive info
+those info needed for `send_candidate_email` action 
+you need to get a App Password to be able to use the service 
+you can check `http://nodemailer.com/guides/using-gmail` documentation in `App Password (requires 2-Step Verification)` section for this
+its critical to get a working gmail account so for the service to work , other wise the job will fail
 
 ### Run
 
@@ -156,6 +169,8 @@ Response:
   {
     "id":,
     "name":"Interview Pipeline",
+    // you should use one of those 3 actions, its case sensitive so make sure to copy one of them
+    // ["compose_candidate_email" , "send_candidate_email" , "send_http_request"]
     "actionType":"compose_candidate_email",
     "createdAt":,
     "updatedAt":,
@@ -338,36 +353,27 @@ Response:
 Response:
 
 ```json
-[
-  {
-    "attemptNumber": 1,
-    "status": "failed",
-    "responseStatusCode": 500
-  },
-  {
-    "attemptNumber": 2,
-    "status": "success"
-  }
-]
-```
+{
+    "deliveryAttempts": [
+        {
+            "id": "49909a71-dda4-4519-be00-65c2789668a9",
+            "jobId": "3cf5e1c6-4ceb-45f0-9683-95a3ef223d02",
+            "subscriberId": "f6beaa9c-d17e-449d-8b06-233633ac3f68",
+            "attemptNumber": 1,
+            "status": "success",
+            "attemptedAt": "2026-03-24T00:24:14.135Z",
+            "responseStatusCode": 200,
+            "errorMessage": null,
+            "deliveredAt": "2026-03-24T00:24:14.612Z",
+            "nextRetryAt": null,
+            "createdAt": "2026-03-24T00:24:14.135Z",
+            "updatedAt": "2026-03-24T00:24:14.612Z"
+        }
+    ]
+}```
 
 ---
 
-## Actions
-
-### compose_candidate_email
-
-Transforms webhook payload into email content.
-
-### send_candidate_email
-
-Sends emails to candidates(users).
-
-### send_http_request
-
-Sends processed data to external APIs.
-
----
 
 ## 🔥 Design Decisions (Important)
 
