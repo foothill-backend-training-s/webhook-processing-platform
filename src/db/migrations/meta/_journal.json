@@ -43,6 +43,13 @@
       "when": 1774308450838,
       "tag": "0005_zippy_forgotten_one",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774370084389,
+      "tag": "0006_calm_the_liberteens",
+      "breakpoints": true
     }
   ]
 }
