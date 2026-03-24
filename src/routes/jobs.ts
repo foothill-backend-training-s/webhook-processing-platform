@@ -19,7 +19,7 @@ jobsRouter.get("/:id", async (req: Request, res: Response) => {
   if (!job) {
     throw new HTTPError("job not found", 404);
   }
-  const attempts = await getDeliveryAttemptsByJobId(jobId);
+  const attempts = await getDeliveryAttemptsByJobId(job.id);
 
   res.status(200).json({
     job: job,
